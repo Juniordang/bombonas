@@ -1,7 +1,11 @@
-import { Package, Activity, AlertTriangle, TrendingUp } from "lucide-react";
+import { Package, Activity, AlertTriangle, TrendingUp, Download, Filter } from "lucide-react";
 import Header from "@/components/Header";
 import StatsCard from "@/components/StatsCard";
 import BombanaCard, { Bombana } from "@/components/BombanaCard";
+import StatsChart from "@/components/StatsChart";
+import ActivityTimeline from "@/components/ActivityTimeline";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Dados de exemplo
 const mockBombanas: Bombana[] = [
@@ -32,16 +36,31 @@ const mockBombanas: Bombana[] = [
 ];
 
 const Dashboard = () => {
+  const handleExportData = () => {
+    toast.success("Relatório exportado com sucesso!");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <main className="container py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Visão geral do sistema de gerenciamento de bombanas
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight mb-2">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Visão geral do sistema de gerenciamento de bombanas
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <Filter className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportData}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -70,6 +89,12 @@ const Dashboard = () => {
             icon={AlertTriangle}
             variant="warning"
           />
+        </div>
+
+        {/* Charts */}
+        <div className="grid gap-6 lg:grid-cols-2 mb-8">
+          <StatsChart />
+          <ActivityTimeline />
         </div>
 
         {/* Recent Activity */}

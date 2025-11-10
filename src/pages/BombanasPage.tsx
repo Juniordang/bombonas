@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Package, Plus, Search, Download, Filter, SlidersHorizontal, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import BombanaCard, { Bombana } from "@/components/BombanaCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 // Dados expandidos de exemplo
 const mockBombanas: Bombana[] = [
@@ -60,72 +64,192 @@ const mockBombanas: Bombana[] = [
 
 const BombanasPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("todos");
+  const [sortBy, setSortBy] = useState("recente");
+  const [selectedBombanas, setSelectedBombanas] = useState<string[]>([]);
 
-  const filteredBombanas = mockBombanas.filter((bombana) => {
-    const matchesSearch = 
-      bombana.qrCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bombana.localizacao.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "todos" || bombana.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const handleAddBombana = () => {
+    toast.success("Adicionar nova bombana");
+  };
+
+  const handleExportData = () => {
+    toast.success("Lista exportada com sucesso!");
+  };
+
+  const handleBulkAction = (action: string) => {
+    if (selectedBombanas.length === 0) {
+      toast.error("Selecione pelo menos uma bombana");
+      return;
+    }
+    toast.success(`Ação "${action}" aplicada a ${selectedBombanas.length} bombana(s)`);
+    setSelectedBombanas([]);
+  };
+
+  const toggleBombanaSelection = (id: string) => {
+    setSelectedBombanas(prev =>
+      prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id]
+    );
+  };
+
+  const filteredBombanas = mockBombanas.filter((bombana) =>
+    bombana.qrCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    bombana.localizacao.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filterByStatus = (status: Bombana["status"]) => {
+    return filteredBombanas.filter((b) => b.status === status);
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <main className="container py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight mb-2">Bombanas</h1>
-            <p className="text-muted-foreground">
-              Gerencie todas as bombanas cadastradas no sistema
-            </p>
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight mb-2">
+                Gerenciar Bombanas
+              </h1>
+              <p className="text-muted-foreground">
+                Total de {mockBombanas.length} bombanas cadastradas
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleExportData}>
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
+              <Button onClick={handleAddBombana} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Nova Bombana
+              </Button>
+            </div>
           </div>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Nova Bombana
-          </Button>
-        </div>
 
-        {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por código ou localização..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos os Status</SelectItem>
-              <SelectItem value="disponivel">Disponível</SelectItem>
-              <SelectItem value="em-uso">Em Uso</SelectItem>
-              <SelectItem value="manutencao">Manutenção</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          {/* Barra de filtros e ações */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por QR Code ou localização..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px]">
+                    <SlidersHorizontal className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Ordenar por" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recente">Mais Recente</SelectItem>
+                    <SelectItem value="antigo">Mais Antigo</SelectItem>
+                    <SelectItem value="qrcode">QR Code</SelectItem>
+                    <SelectItem value="localizacao">Localização</SelectItem>
+                  </SelectContent>
+                </Select>
 
-        {/* Lista de Bombanas */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredBombanas.map((bombana) => (
-            <BombanaCard key={bombana.id} bombana={bombana} />
-          ))}
-        </div>
+                <Button variant="outline" size="sm">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  Ver no Mapa
+                </Button>
+              </div>
 
-        {filteredBombanas.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Nenhuma bombana encontrada com os filtros aplicados.</p>
-          </div>
-        )}
+              {/* Ações em massa */}
+              {selectedBombanas.length > 0 && (
+                <div className="mt-4 flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
+                  <span className="text-sm font-medium">
+                    {selectedBombanas.length} selecionada(s)
+                  </span>
+                  <div className="flex gap-2 ml-auto">
+                    <Button variant="outline" size="sm" onClick={() => handleBulkAction("manutencao")}>
+                      Manutenção
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleBulkAction("disponivel")}>
+                      Marcar Disponível
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setSelectedBombanas([])}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Tabs defaultValue="todas" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="todas">Todas ({filteredBombanas.length})</TabsTrigger>
+              <TabsTrigger value="disponivel">Disponíveis ({filterByStatus("disponivel").length})</TabsTrigger>
+              <TabsTrigger value="em-uso">Em Uso ({filterByStatus("em-uso").length})</TabsTrigger>
+              <TabsTrigger value="manutencao">Manutenção ({filterByStatus("manutencao").length})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="todas" className="mt-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filteredBombanas.map((bombana) => (
+                  <div key={bombana.id} className="relative">
+                    <Checkbox
+                      className="absolute top-4 left-4 z-10 bg-background"
+                      checked={selectedBombanas.includes(bombana.id)}
+                      onCheckedChange={() => toggleBombanaSelection(bombana.id)}
+                    />
+                    <BombanaCard bombana={bombana} />
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="disponivel" className="mt-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filterByStatus("disponivel").map((bombana) => (
+                  <div key={bombana.id} className="relative">
+                    <Checkbox
+                      className="absolute top-4 left-4 z-10 bg-background"
+                      checked={selectedBombanas.includes(bombana.id)}
+                      onCheckedChange={() => toggleBombanaSelection(bombana.id)}
+                    />
+                    <BombanaCard bombana={bombana} />
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="em-uso" className="mt-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filterByStatus("em-uso").map((bombana) => (
+                  <div key={bombana.id} className="relative">
+                    <Checkbox
+                      className="absolute top-4 left-4 z-10 bg-background"
+                      checked={selectedBombanas.includes(bombana.id)}
+                      onCheckedChange={() => toggleBombanaSelection(bombana.id)}
+                    />
+                    <BombanaCard bombana={bombana} />
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="manutencao" className="mt-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filterByStatus("manutencao").map((bombana) => (
+                  <div key={bombana.id} className="relative">
+                    <Checkbox
+                      className="absolute top-4 left-4 z-10 bg-background"
+                      checked={selectedBombanas.includes(bombana.id)}
+                      onCheckedChange={() => toggleBombanaSelection(bombana.id)}
+                    />
+                    <BombanaCard bombana={bombana} />
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
     </div>
   );

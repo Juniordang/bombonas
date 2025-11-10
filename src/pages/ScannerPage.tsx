@@ -14,12 +14,15 @@ const ScannerPage = () => {
 
   const handleStartScan = () => {
     setScanning(true);
+    toast.info("Escaneando QR Code...");
     // Simula escaneamento após 2 segundos
     setTimeout(() => {
       const mockCode = "BOM001";
-      toast.success(`QR Code escaneado: ${mockCode}`);
+      toast.success(`QR Code escaneado: ${mockCode}`, {
+        description: "Redirecionando para detalhes..."
+      });
       setScanning(false);
-      navigate(`/bombanas/1`);
+      setTimeout(() => navigate(`/bombanas/1`), 500);
     }, 2000);
   };
 
@@ -50,13 +53,17 @@ const ScannerPage = () => {
             <CardContent className="p-0">
               <div className="relative aspect-square bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center">
                 {scanning ? (
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5">
                     <div className="relative">
-                      <div className="absolute inset-0 border-4 border-primary/30 rounded-xl animate-pulse"></div>
-                      <div className="relative z-10 h-64 w-64 border-4 border-primary rounded-xl flex items-center justify-center">
+                      <div className="absolute inset-0 border-4 border-primary/30 rounded-xl animate-pulse shadow-glow"></div>
+                      <div className="relative z-10 h-64 w-64 border-4 border-primary rounded-xl flex flex-col items-center justify-center gap-4 bg-background/50 backdrop-blur-sm">
                         <Camera className="h-24 w-24 text-primary animate-pulse" />
+                        <div className="text-center">
+                          <p className="font-semibold text-primary">Escaneando...</p>
+                          <p className="text-sm text-muted-foreground">Posicione o QR Code</p>
+                        </div>
                       </div>
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-primary animate-scan"></div>
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-scan shadow-glow"></div>
                     </div>
                   </div>
                 ) : (
