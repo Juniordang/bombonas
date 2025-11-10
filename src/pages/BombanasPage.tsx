@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Package, Plus, Search, Download, Filter, SlidersHorizontal, MapPin } from "lucide-react";
+import { Search, Download, SlidersHorizontal, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import BombanaCard, { Bombana } from "@/components/BombanaCard";
+import BombanaFormDialog from "@/components/BombanaFormDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -67,10 +68,6 @@ const BombanasPage = () => {
   const [sortBy, setSortBy] = useState("recente");
   const [selectedBombanas, setSelectedBombanas] = useState<string[]>([]);
 
-  const handleAddBombana = () => {
-    toast.success("Adicionar nova bombana");
-  };
-
   const handleExportData = () => {
     toast.success("Lista exportada com sucesso!");
   };
@@ -119,10 +116,7 @@ const BombanasPage = () => {
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
-              <Button onClick={handleAddBombana} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Nova Bombana
-              </Button>
+              <BombanaFormDialog />
             </div>
           </div>
 
