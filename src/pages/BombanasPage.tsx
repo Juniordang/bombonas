@@ -6,7 +6,13 @@ import BombanaFormDialog from "@/components/BombanaFormDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -53,14 +59,6 @@ const mockBombanas: Bombana[] = [
     ultimaAtualizacao: "Hoje às 08:45",
     capacidade: "13kg",
   },
-  {
-    id: "6",
-    qrCode: "BOM006",
-    status: "disponivel",
-    localizacao: "Depósito A - Setor 3",
-    ultimaAtualizacao: "Há 1 hora",
-    capacidade: "20kg",
-  },
 ];
 
 const BombanasPage = () => {
@@ -77,19 +75,22 @@ const BombanasPage = () => {
       toast.error("Selecione pelo menos uma bombana");
       return;
     }
-    toast.success(`Ação "${action}" aplicada a ${selectedBombanas.length} bombana(s)`);
+    toast.success(
+      `Ação "${action}" aplicada a ${selectedBombanas.length} bombana(s)`
+    );
     setSelectedBombanas([]);
   };
 
   const toggleBombanaSelection = (id: string) => {
-    setSelectedBombanas(prev =>
-      prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id]
+    setSelectedBombanas((prev) =>
+      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]
     );
   };
 
-  const filteredBombanas = mockBombanas.filter((bombana) =>
-    bombana.qrCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bombana.localizacao.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredBombanas = mockBombanas.filter(
+    (bombana) =>
+      bombana.qrCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bombana.localizacao.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filterByStatus = (status: Bombana["status"]) => {
@@ -99,13 +100,13 @@ const BombanasPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container py-8">
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold tracking-tight mb-2">
-                Gerenciar Bombanas
+                B-Express
               </h1>
               <p className="text-muted-foreground">
                 Total de {mockBombanas.length} bombanas cadastradas
@@ -133,7 +134,7 @@ const BombanasPage = () => {
                     className="pl-9"
                   />
                 </div>
-                
+
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-[180px]">
                     <SlidersHorizontal className="h-4 w-4 mr-2" />
@@ -160,13 +161,25 @@ const BombanasPage = () => {
                     {selectedBombanas.length} selecionada(s)
                   </span>
                   <div className="flex gap-2 ml-auto">
-                    <Button variant="outline" size="sm" onClick={() => handleBulkAction("manutencao")}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleBulkAction("manutencao")}
+                    >
                       Manutenção
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleBulkAction("disponivel")}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleBulkAction("disponivel")}
+                    >
                       Marcar Disponível
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setSelectedBombanas([])}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedBombanas([])}
+                    >
                       Cancelar
                     </Button>
                   </div>
@@ -177,10 +190,18 @@ const BombanasPage = () => {
 
           <Tabs defaultValue="todas" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="todas">Todas ({filteredBombanas.length})</TabsTrigger>
-              <TabsTrigger value="disponivel">Disponíveis ({filterByStatus("disponivel").length})</TabsTrigger>
-              <TabsTrigger value="em-uso">Em Uso ({filterByStatus("em-uso").length})</TabsTrigger>
-              <TabsTrigger value="manutencao">Manutenção ({filterByStatus("manutencao").length})</TabsTrigger>
+              <TabsTrigger value="todas">
+                Todas ({filteredBombanas.length})
+              </TabsTrigger>
+              <TabsTrigger value="disponivel">
+                Disponíveis ({filterByStatus("disponivel").length})
+              </TabsTrigger>
+              <TabsTrigger value="em-uso">
+                Em Uso ({filterByStatus("em-uso").length})
+              </TabsTrigger>
+              <TabsTrigger value="manutencao">
+                Manutenção ({filterByStatus("manutencao").length})
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="todas" className="mt-6">
