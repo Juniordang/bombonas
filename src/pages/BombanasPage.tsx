@@ -106,19 +106,19 @@ const BombanasPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold tracking-tight mb-2">
-                B-Express
+                Bombonas
               </h1>
               <p className="text-muted-foreground">
                 Total de {mockBombanas.length} bombanas cadastradas
               </p>
             </div>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handleExportData}>
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
-              <BombanaFormDialog />
-            </div>
+              </div> */}
+            <BombanaFormDialog />
           </div>
 
           {/* Barra de filtros e ações */}

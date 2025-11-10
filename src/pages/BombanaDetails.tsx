@@ -27,7 +27,7 @@ const BombanaDetails = () => {
     id: "1",
     qrCode: "BOM001",
     status: "disponivel" as const,
-    localizacao: "Depósito A - Setor 1",
+    localizacao: "Unipar cianorte",
     ultimaAtualizacao: "Hoje às 14:30",
     capacidade: "13kg",
   };
@@ -42,7 +42,10 @@ const BombanaDetails = () => {
   };
 
   const getStatusVariant = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
       disponivel: "default",
       "em-uso": "secondary",
       manutencao: "destructive",
@@ -52,10 +55,6 @@ const BombanaDetails = () => {
 
   const handleEdit = () => {
     toast.success("Editar bombana");
-  };
-
-  const handleDownload = () => {
-    toast.success("Download iniciado");
   };
 
   const handleDelete = () => {
@@ -83,17 +82,13 @@ const BombanaDetails = () => {
               <QrCode className="h-4 w-4 mr-2" />
               Imprimir QR
             </Button>
-            <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="h-4 w-4 mr-2" />
-              Relatório
-            </Button>
             <Button variant="outline" size="sm" onClick={handleEdit}>
               <Edit className="h-4 w-4 mr-2" />
               Editar
             </Button>
             <Button variant="destructive" size="sm" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Excluir
+              Desativar
             </Button>
           </div>
         </div>
@@ -110,7 +105,9 @@ const BombanaDetails = () => {
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Capacidade</span>
+                <span className="text-sm text-muted-foreground">
+                  Capacidade
+                </span>
                 <span className="font-semibold">{bombana.capacidade}</span>
               </div>
               <Separator />
@@ -126,13 +123,20 @@ const BombanaDetails = () => {
                   <Clock className="h-4 w-4" />
                   Última atualização
                 </span>
-                <p className="text-sm font-medium">{bombana.ultimaAtualizacao}</p>
+                <p className="text-sm font-medium">
+                  {bombana.ultimaAtualizacao}
+                </p>
               </div>
             </CardContent>
           </Card>
 
           <div className="lg:col-span-2">
-            <BombanaMap localizacao={bombana.localizacao} />
+            <BombanaMap
+              localizacao={bombana.localizacao}
+              lat={-23.653139423964973}
+              lng={-52.613303296314186}
+              accuracy={12}
+            />
           </div>
         </div>
 

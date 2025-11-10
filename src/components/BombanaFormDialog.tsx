@@ -29,16 +29,13 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import QrCodeButton from "./ui/QrCodeInput";
 
 const bombanaSchema = z.object({
-  qrCode: z.string()
-    .trim()
-    .min(3, { message: "QR Code deve ter no mínimo 3 caracteres" })
-    .max(50, { message: "QR Code deve ter no máximo 50 caracteres" })
-    .regex(/^[A-Z0-9]+$/, { message: "QR Code deve conter apenas letras maiúsculas e números" }),
-  capacidade: z.string()
-    .min(1, { message: "Selecione a capacidade" }),
-  localizacao: z.string()
+  qrCode: z.string(),
+  capacidade: z.string().min(1, { message: "Selecione a capacidade" }),
+  localizacao: z
+    .string()
     .trim()
     .min(5, { message: "Localização deve ter no mínimo 5 caracteres" })
     .max(200, { message: "Localização deve ter no máximo 200 caracteres" }),
@@ -54,7 +51,10 @@ interface BombanaFormDialogProps {
   size?: "default" | "sm" | "lg" | "icon";
 }
 
-const BombanaFormDialog = ({ variant = "default", size = "default" }: BombanaFormDialogProps) => {
+const BombanaFormDialog = ({
+  variant = "default",
+  size = "default",
+}: BombanaFormDialogProps) => {
   const [open, setOpen] = useState(false);
 
   const form = useForm<BombanaFormValues>({
@@ -72,7 +72,7 @@ const BombanaFormDialog = ({ variant = "default", size = "default" }: BombanaFor
     toast.success("Bombana cadastrada com sucesso!", {
       description: `QR Code: ${data.qrCode}`,
     });
-    
+
     form.reset();
     setOpen(false);
   };
@@ -82,31 +82,28 @@ const BombanaFormDialog = ({ variant = "default", size = "default" }: BombanaFor
       <DialogTrigger asChild>
         <Button variant={variant} size={size} className="gap-2">
           <Plus className="h-4 w-4" />
-          Nova Bombana
+          Nova Bombona
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Cadastrar Nova Bombana</DialogTitle>
+          <DialogTitle>Cadastrar Nova Bombona</DialogTitle>
           <DialogDescription>
-            Preencha os dados da bombana. Todos os campos são obrigatórios.
+            Preencha os dados da bombona. Todos os campos são obrigatórios.
           </DialogDescription>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
-              control={form.control}
               name="qrCode"
+              control={form.control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>QR Code</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="BOM001" 
-                      {...field}
-                      maxLength={50}
-                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                    <QrCodeButton
+                      onRead={(qr) => field.onChange(qr.toUpperCase())}
                     />
                   </FormControl>
                   <FormMessage />
@@ -145,8 +142,8 @@ const BombanaFormDialog = ({ variant = "default", size = "default" }: BombanaFor
                 <FormItem>
                   <FormLabel>Localização Atual</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Depósito A - Setor 1" 
+                    <Input
+                      placeholder="Depósito A - Setor 1"
                       {...field}
                       maxLength={200}
                     />

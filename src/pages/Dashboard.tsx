@@ -35,7 +35,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight mb-2">Dashboard</h1>
@@ -48,25 +48,25 @@ const Dashboard = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatsCard
             title="Total de Bombanas"
-            value="48"
+            value="5"
             icon={Package}
             trend={{ value: "12% vs. mês anterior", positive: true }}
           />
           <StatsCard
             title="Disponíveis"
-            value="28"
+            value="2"
             icon={Activity}
             variant="success"
           />
           <StatsCard
             title="Em Uso"
-            value="15"
+            value="2"
             icon={TrendingUp}
             variant="info"
           />
           <StatsCard
             title="Manutenção"
-            value="5"
+            value="1"
             icon={AlertTriangle}
             variant="warning"
           />
