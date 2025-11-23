@@ -57,12 +57,8 @@ const BombanaDetails = () => {
     toast.success("Editar bombana");
   };
 
-  const handleDelete = () => {
+  const handleDisable = () => {
     toast.error("Tem certeza que deseja excluir esta bombana?");
-  };
-
-  const handlePrintQR = () => {
-    toast.success("QR Code enviado para impressão");
   };
 
   return (
@@ -78,15 +74,11 @@ const BombanaDetails = () => {
             </Button>
           </Link>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handlePrintQR}>
-              <QrCode className="h-4 w-4 mr-2" />
-              Imprimir QR
-            </Button>
             <Button variant="outline" size="sm" onClick={handleEdit}>
               <Edit className="h-4 w-4 mr-2" />
               Editar
             </Button>
-            <Button variant="destructive" size="sm" onClick={handleDelete}>
+            <Button variant="destructive" size="sm" onClick={handleDisable}>
               <Trash2 className="h-4 w-4 mr-2" />
               Desativar
             </Button>
