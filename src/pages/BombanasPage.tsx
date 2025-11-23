@@ -3,6 +3,7 @@ import { Search, Download, SlidersHorizontal, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import BombanaCard, { Bombana } from "@/components/BombanaCard";
 import BombanaFormDialog from "@/components/BombanaFormDialog";
+import BombanaMap from "@/components/BombanaMap";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +27,9 @@ const mockBombanas: Bombana[] = [
     localizacao: "Depósito A - Setor 1",
     ultimaAtualizacao: "Hoje às 14:30",
     capacidade: "13kg",
+    lat: -23.653139,
+    lng: -52.613303,
+    dataAtualizacao: new Date("2025-11-23T14:30:00"),
   },
   {
     id: "2",
@@ -34,6 +38,9 @@ const mockBombanas: Bombana[] = [
     localizacao: "Cliente - Rua das Flores, 123",
     ultimaAtualizacao: "Ontem às 09:15",
     capacidade: "13kg",
+    lat: -23.656789,
+    lng: -52.610456,
+    dataAtualizacao: new Date("2025-11-22T09:15:00"),
   },
   {
     id: "3",
@@ -42,6 +49,9 @@ const mockBombanas: Bombana[] = [
     localizacao: "Oficina - Setor Manutenção",
     ultimaAtualizacao: "Há 2 dias",
     capacidade: "13kg",
+    lat: -23.649876,
+    lng: -52.618901,
+    dataAtualizacao: new Date("2025-11-21T10:00:00"),
   },
   {
     id: "4",
@@ -50,6 +60,9 @@ const mockBombanas: Bombana[] = [
     localizacao: "Depósito B - Setor 2",
     ultimaAtualizacao: "Hoje às 10:00",
     capacidade: "20kg",
+    lat: -23.651234,
+    lng: -52.615678,
+    dataAtualizacao: new Date("2025-11-23T10:00:00"),
   },
   {
     id: "5",
@@ -58,6 +71,9 @@ const mockBombanas: Bombana[] = [
     localizacao: "Cliente - Av. Principal, 456",
     ultimaAtualizacao: "Hoje às 08:45",
     capacidade: "13kg",
+    lat: -23.658901,
+    lng: -52.608234,
+    dataAtualizacao: new Date("2025-11-23T08:45:00"),
   },
 ];
 
@@ -65,6 +81,7 @@ const BombanasPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("recente");
   const [selectedBombanas, setSelectedBombanas] = useState<string[]>([]);
+  const [showMapView, setShowMapView] = useState(false);
 
   const handleExportData = () => {
     toast.success("Lista exportada com sucesso!");
@@ -87,11 +104,26 @@ const BombanasPage = () => {
     );
   };
 
-  const filteredBombanas = mockBombanas.filter(
-    (bombana) =>
-      bombana.qrCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bombana.localizacao.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBombanas = mockBombanas
+    .filter(
+      (bombana) =>
+        bombana.qrCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        bombana.localizacao.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "recente":
+          return (b.dataAtualizacao?.getTime() || 0) - (a.dataAtualizacao?.getTime() || 0);
+        case "antigo":
+          return (a.dataAtualizacao?.getTime() || 0) - (b.dataAtualizacao?.getTime() || 0);
+        case "qrcode":
+          return a.qrCode.localeCompare(b.qrCode);
+        case "localizacao":
+          return a.localizacao.localeCompare(b.localizacao);
+        default:
+          return 0;
+      }
+    });
 
   const filterByStatus = (status: Bombana["status"]) => {
     return filteredBombanas.filter((b) => b.status === status);
@@ -148,9 +180,13 @@ const BombanasPage = () => {
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMapView(!showMapView)}
+                >
                   <MapPin className="h-4 w-4 mr-2" />
-                  Ver no Mapa
+                  {showMapView ? "Ver Lista" : "Ver no Mapa"}
                 </Button>
               </div>
 
@@ -188,23 +224,36 @@ const BombanasPage = () => {
             </CardContent>
           </Card>
 
-          <Tabs defaultValue="todas" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="todas">
-                Todas ({filteredBombanas.length})
-              </TabsTrigger>
-              <TabsTrigger value="disponivel">
-                Disponíveis ({filterByStatus("disponivel").length})
-              </TabsTrigger>
-              <TabsTrigger value="em-uso">
-                Em Uso ({filterByStatus("em-uso").length})
-              </TabsTrigger>
-              <TabsTrigger value="manutencao">
-                Manutenção ({filterByStatus("manutencao").length})
-              </TabsTrigger>
-            </TabsList>
+          {showMapView ? (
+            <div className="grid gap-6">
+              {filteredBombanas.map((bombana) => (
+                <BombanaMap
+                  key={bombana.id}
+                  localizacao={`${bombana.qrCode} - ${bombana.localizacao}`}
+                  lat={bombana.lat}
+                  lng={bombana.lng}
+                  accuracy={15}
+                />
+              ))}
+            </div>
+          ) : (
+            <Tabs defaultValue="todas" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="todas">
+                  Todas ({filteredBombanas.length})
+                </TabsTrigger>
+                <TabsTrigger value="disponivel">
+                  Disponíveis ({filterByStatus("disponivel").length})
+                </TabsTrigger>
+                <TabsTrigger value="em-uso">
+                  Em Uso ({filterByStatus("em-uso").length})
+                </TabsTrigger>
+                <TabsTrigger value="manutencao">
+                  Manutenção ({filterByStatus("manutencao").length})
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="todas" className="mt-6">
+              <TabsContent value="todas" className="mt-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {filteredBombanas.map((bombana) => (
                   <div key={bombana.id} className="relative">
@@ -262,8 +311,9 @@ const BombanasPage = () => {
                   </div>
                 ))}
               </div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </main>
     </div>
