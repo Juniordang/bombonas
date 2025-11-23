@@ -17,19 +17,22 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import BombanaMap from "@/components/BombanaMap";
 import ActivityTimeline from "@/components/ActivityTimeline";
+import BombanaFormDialog from "@/components/BombanaFormDialog";
 import { toast } from "sonner";
 
 const BombanaDetails = () => {
   const { id } = useParams();
 
-  // Dados mockados
+  // Dados mockados - em produção isso viria de uma API ou banco
   const bombana = {
-    id: "1",
+    id: id || "1",
     qrCode: "BOM001",
     status: "disponivel" as const,
     localizacao: "Unipar cianorte",
     ultimaAtualizacao: "Hoje às 14:30",
     capacidade: "13kg",
+    lat: -23.653139,
+    lng: -52.613303,
   };
 
   const getStatusLabel = (status: string) => {
@@ -125,8 +128,8 @@ const BombanaDetails = () => {
           <div className="lg:col-span-2">
             <BombanaMap
               localizacao={bombana.localizacao}
-              lat={-23.653139423964973}
-              lng={-52.613303296314186}
+              lat={bombana.lat}
+              lng={bombana.lng}
               accuracy={12}
             />
           </div>

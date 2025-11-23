@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { MapPin, Calendar, QrCode } from "lucide-react";
+import { MapPin, Calendar, QrCode, Edit } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import BombanaFormDialog from "./BombanaFormDialog";
 
 export interface Bombana {
   id: string;
@@ -11,6 +12,9 @@ export interface Bombana {
   localizacao: string;
   ultimaAtualizacao: string;
   capacidade: string;
+  lat?: number;
+  lng?: number;
+  dataAtualizacao?: Date;
 }
 
 interface BombanaCardProps {
@@ -67,11 +71,24 @@ const BombanaCard = ({ bombana }: BombanaCardProps) => {
           </div>
         </div>
 
-        <Button variant="outline" className="w-full" asChild>
-          <Link to={`/bombanas/${bombana.id}`}>
-            Ver Detalhes
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <BombanaFormDialog
+            variant="outline"
+            size="sm"
+            editData={{
+              id: bombana.id,
+              qrCode: bombana.qrCode,
+              capacidade: bombana.capacidade,
+              localizacao: bombana.localizacao,
+              status: bombana.status,
+            }}
+          />
+          <Button variant="outline" className="flex-1" asChild>
+            <Link to={`/bombanas/${bombana.id}`}>
+              Ver Detalhes
+            </Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

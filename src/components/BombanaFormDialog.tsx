@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus } from "lucide-react";
+import { Plus, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,7 +32,7 @@ import { toast } from "sonner";
 import QrCodeButton from "./ui/QrCodeInput";
 
 const bombanaSchema = z.object({
-  qrCode: z.string(),
+  qrCode: z.string().min(1, { message: "QR Code é obrigatório" }),
   capacidade: z.string().min(1, { message: "Selecione a capacidade" }),
   localizacao: z
     .string()
@@ -49,45 +49,73 @@ type BombanaFormValues = z.infer<typeof bombanaSchema>;
 interface BombanaFormDialogProps {
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
+  editData?: {
+    id: string;
+    qrCode: string;
+    capacidade: string;
+    localizacao: string;
+    status: "disponivel" | "em-uso" | "manutencao";
+  };
+  onSuccess?: () => void;
 }
 
 const BombanaFormDialog = ({
   variant = "default",
   size = "default",
+  editData,
+  onSuccess,
 }: BombanaFormDialogProps) => {
   const [open, setOpen] = useState(false);
+  const isEditMode = !!editData;
 
   const form = useForm<BombanaFormValues>({
     resolver: zodResolver(bombanaSchema),
     defaultValues: {
-      qrCode: "",
-      capacidade: "",
-      localizacao: "",
-      status: "disponivel",
+      qrCode: editData?.qrCode || "",
+      capacidade: editData?.capacidade || "",
+      localizacao: editData?.localizacao || "",
+      status: editData?.status || "disponivel",
     },
   });
 
   const onSubmit = (data: BombanaFormValues) => {
-    // Aqui você pode adicionar a lógica para salvar no banco de dados
-    toast.success("Bombana cadastrada com sucesso!", {
-      description: `QR Code: ${data.qrCode}`,
-    });
+    if (isEditMode) {
+      toast.success("Bombona atualizada com sucesso!", {
+        description: `QR Code: ${data.qrCode}`,
+      });
+    } else {
+      toast.success("Bombana cadastrada com sucesso!", {
+        description: `QR Code: ${data.qrCode}`,
+      });
+    }
 
     form.reset();
     setOpen(false);
+    onSuccess?.();
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant={variant} size={size} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nova Bombona
+          {isEditMode ? (
+            <>
+              <Edit className="h-4 w-4" />
+              Editar
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Nova Bombona
+            </>
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Cadastrar Nova Bombona</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Editar Bombona" : "Cadastrar Nova Bombona"}
+          </DialogTitle>
           <DialogDescription>
             Preencha os dados da bombona. Todos os campos são obrigatórios.
           </DialogDescription>
@@ -102,9 +130,17 @@ const BombanaFormDialog = ({
                 <FormItem>
                   <FormLabel>QR Code</FormLabel>
                   <FormControl>
-                    <QrCodeButton
-                      onRead={(qr) => field.onChange(qr.toUpperCase())}
-                    />
+                    {isEditMode ? (
+                      <Input
+                        {...field}
+                        disabled
+                        className="bg-muted"
+                      />
+                    ) : (
+                      <QrCodeButton
+                        onRead={(qr) => field.onChange(qr.toUpperCase())}
+                      />
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -187,7 +223,9 @@ const BombanaFormDialog = ({
               >
                 Cancelar
               </Button>
-              <Button type="submit">Cadastrar</Button>
+              <Button type="submit">
+                {isEditMode ? "Salvar Alterações" : "Cadastrar"}
+              </Button>
             </div>
           </form>
         </Form>
