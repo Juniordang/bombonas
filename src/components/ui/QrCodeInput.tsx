@@ -1,74 +1,109 @@
-"use client";
-import { useState } from "react";
-import { Scanner } from "@yudiel/react-qr-scanner";
+// src/components/ui/QrCodeInput.tsx
+import { useEffect, useRef, useState } from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
-import { QrCode, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-type Props = {
-  onRead: (qrText: string) => void;
-};
+interface QrCodeButtonProps {
+  onRead: (value: string) => void;
+}
 
-export default function QrCodeButton({ onRead }: Props) {
-  const [openScanner, setOpenScanner] = useState(false);
+const QrCodeButton = ({ onRead }: QrCodeButtonProps) => {
+  const [open, setOpen] = useState(false);
+  const [containerReady, setContainerReady] = useState(false);
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+
+  useEffect(() => {
+    // Só tenta iniciar o scanner quando:
+    // - o Dialog está aberto
+    // - o div#qr-reader já foi montado (containerReady = true)
+    if (!open || !containerReady) return;
+    if (scannerRef.current) return; // já inicializado
+
+    try {
+      const scanner = new Html5QrcodeScanner(
+        "qr-reader", // id do <div>
+        {
+          fps: 10,
+          qrbox: 250,
+        },
+        false
+      );
+
+      scanner.render(
+        (decodedText) => {
+          console.log("QR LIDO:", decodedText);
+          onRead(decodedText);
+          scanner.clear().catch(() => {});
+          scannerRef.current = null;
+          setOpen(false);
+        },
+        (err) => {
+          // erros de leitura são normais, então ignora
+          // console.log("scanner error:", err);
+        }
+      );
+
+      scannerRef.current = scanner;
+    } catch (err) {
+      console.error("Erro ao iniciar Html5QrcodeScanner:", err);
+    }
+
+    // cleanup ao fechar / desmontar
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(() => {});
+        scannerRef.current = null;
+      }
+    };
+  }, [open, containerReady, onRead]);
 
   return (
     <>
-      {/* Botão que abre o leitor */}
       <Button
         type="button"
-        variant="default"
-        className="flex items-center gap-2"
-        onClick={() => setOpenScanner(true)}
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="w-full justify-start"
       >
-        <QrCode className="w-5 h-5" />
         Ler QR Code
       </Button>
 
-      {/* Modal do leitor de QR */}
-      {openScanner && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-4 shadow-xl w-[90%] max-w-md relative">
-            <button
-              onClick={() => setOpenScanner(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
-            >
-              <X size={20} />
-            </button>
+      <Dialog
+        open={open}
+        onOpenChange={(value) => {
+          setOpen(value);
+          if (!value) {
+            setContainerReady(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Escanear QR Code</DialogTitle>
+          </DialogHeader>
 
-            <h3 className="text-lg font-semibold mb-3 text-center">
-              Escanear QR Code
-            </h3>
+          {/* Quando esse div monta, avisamos que o container está pronto */}
+          <div
+            id="qr-reader"
+            className="mt-4"
+            ref={() => {
+              setContainerReady(true);
+            }}
+          />
 
-            <Scanner
-              onScan={(results) => {
-                const text = results?.[0]?.rawValue;
-                if (text) {
-                  onRead(text.toUpperCase());
-                  setOpenScanner(false);
-                }
-              }}
-              onError={(err) => console.warn("Erro no scanner:", err)}
-              constraints={{ facingMode: "environment" }}
-              components={{
-                finder: true, // mostra o retângulo central
-                torch: true, // adiciona botão de flash (quando disponível)
-              }}
-              styles={{
-                container: { width: "100%" },
-                video: {
-                  width: "100%",
-                  maxHeight: 320,
-                  borderRadius: "0.75rem",
-                },
-              }}
-            />
-
-            <p className="text-sm text-center text-gray-500 mt-2">
-              Aponte a câmera para o QR Code
-            </p>
-          </div>
-        </div>
-      )}
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Aponte a câmera para o QR Code
+          </p>
+        </DialogContent>
+      </Dialog>
     </>
   );
-}
+};
+
+export default QrCodeButton;

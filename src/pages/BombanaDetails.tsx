@@ -56,10 +56,6 @@ const BombanaDetails = () => {
     return variants[status] || "default";
   };
 
-  const handleEdit = () => {
-    toast.success("Editar bombana");
-  };
-
   const handleDisable = () => {
     toast.error("Tem certeza que deseja excluir esta bombana?");
   };
@@ -77,10 +73,6 @@ const BombanaDetails = () => {
             </Button>
           </Link>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </Button>
             <Button variant="destructive" size="sm" onClick={handleDisable}>
               <Trash2 className="h-4 w-4 mr-2" />
               Desativar

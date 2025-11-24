@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Edit } from "lucide-react";
+import { Plus, Edit, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
 import {
   Dialog,
   DialogContent,
@@ -28,8 +29,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import QrCodeButton from "./ui/QrCodeInput";
+import LocationPickerDialog from "./LocationPickerDialog";
 
 const bombanaSchema = z.object({
   qrCode: z.string().min(1, { message: "QR Code é obrigatório" }),
@@ -42,6 +45,12 @@ const bombanaSchema = z.object({
   status: z.enum(["disponivel", "em-uso", "manutencao"], {
     required_error: "Selecione o status",
   }),
+  // usado só no modo edição, então deixamos opcional
+  descricao: z
+    .string()
+    .trim()
+    .max(500, { message: "Descrição deve ter no máximo 500 caracteres" })
+    .optional(),
 });
 
 type BombanaFormValues = z.infer<typeof bombanaSchema>;
@@ -55,6 +64,7 @@ interface BombanaFormDialogProps {
     capacidade: string;
     localizacao: string;
     status: "disponivel" | "em-uso" | "manutencao";
+    descricao?: string; // histórico inicial, se existir
   };
   onSuccess?: () => void;
 }
@@ -66,6 +76,7 @@ const BombanaFormDialog = ({
   onSuccess,
 }: BombanaFormDialogProps) => {
   const [open, setOpen] = useState(false);
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const isEditMode = !!editData;
 
   const form = useForm<BombanaFormValues>({
@@ -75,11 +86,13 @@ const BombanaFormDialog = ({
       capacidade: editData?.capacidade || "",
       localizacao: editData?.localizacao || "",
       status: editData?.status || "disponivel",
+      descricao: editData?.descricao || "",
     },
   });
 
   const onSubmit = (data: BombanaFormValues) => {
     if (isEditMode) {
+      // aqui você consegue mandar também data.descricao para salvar histórico
       toast.success("Bombona atualizada com sucesso!", {
         description: `QR Code: ${data.qrCode}`,
       });
@@ -123,30 +136,48 @@ const BombanaFormDialog = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* QR CODE */}
             <FormField
               name="qrCode"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>QR Code</FormLabel>
-                  <FormControl>
-                    {isEditMode ? (
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {isEditMode
+                      ? "O QR Code não pode ser alterado após o cadastro."
+                      : "Aponte a câmera para o QR Code ou cole o código manualmente."}
+                  </p>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 rounded-lg border px-3 py-2 bg-muted/40">
+                      <QrCode className="h-4 w-4 text-primary opacity-60" />
                       <Input
-                        {...field}
-                        disabled
-                        className="bg-muted"
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        placeholder="Cole o código aqui"
+                        readOnly={isEditMode} // <- readonly no modo edição
+                        className={`border-0 bg-transparent shadow-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${
+                          isEditMode
+                            ? "cursor-default text-muted-foreground"
+                            : ""
+                        }`}
                       />
-                    ) : (
+                    </div>
+
+                    {!isEditMode && (
                       <QrCodeButton
                         onRead={(qr) => field.onChange(qr.toUpperCase())}
                       />
                     )}
-                  </FormControl>
+                  </div>
+
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* CAPACIDADE */}
             <FormField
               control={form.control}
               name="capacidade"
@@ -171,24 +202,41 @@ const BombanaFormDialog = ({
               )}
             />
 
+            {/* LOCALIZAÇÃO ATUAL */}
             <FormField
               control={form.control}
               name="localizacao"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Localização Atual</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Depósito A - Setor 1"
-                      {...field}
-                      maxLength={200}
-                    />
-                  </FormControl>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Você pode digitar ou escolher no mapa.
+                  </p>
+
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input
+                        placeholder="Depósito A - Setor 1"
+                        {...field}
+                        maxLength={200}
+                      />
+                    </FormControl>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setLocationDialogOpen(true)}
+                    >
+                      Escolher no mapa
+                    </Button>
+                  </div>
+
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* STATUS */}
             <FormField
               control={form.control}
               name="status"
@@ -212,6 +260,31 @@ const BombanaFormDialog = ({
               )}
             />
 
+            {/* DESCRIÇÃO (somente edição) */}
+            {isEditMode && (
+              <FormField
+                control={form.control}
+                name="descricao"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Descreva a atividade realizada. Ex: Bombona movida para Depósito B - Setor 2."
+                        maxLength={500}
+                        className="resize-none"
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Essa descrição será usada no histórico de atividades.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"
@@ -229,6 +302,14 @@ const BombanaFormDialog = ({
             </div>
           </form>
         </Form>
+
+        <LocationPickerDialog
+          open={locationDialogOpen}
+          onOpenChange={setLocationDialogOpen}
+          onSelect={(loc) =>
+            form.setValue("localizacao", loc, { shouldValidate: true })
+          }
+        />
       </DialogContent>
     </Dialog>
   );
