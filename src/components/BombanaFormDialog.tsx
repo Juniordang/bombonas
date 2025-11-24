@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import QrCodeButton from "./ui/QrCodeInput";
 import LocationPickerDialog from "./LocationPickerDialog";
+import { CreateBombanaDTO, UpdateBombanaDTO } from "@/services/bombanaService";
 
 const bombanaSchema = z.object({
   qrCode: z.string().min(1, { message: "QR Code é obrigatório" }),
@@ -64,9 +65,11 @@ interface BombanaFormDialogProps {
     capacidade: string;
     localizacao: string;
     status: "disponivel" | "em-uso" | "manutencao";
-    descricao?: string; // histórico inicial, se existir
+    descricao?: string;
+    lat?: number;
+    lng?: number;
   };
-  onSuccess?: () => void;
+  onSuccess?: (data: CreateBombanaDTO | UpdateBombanaDTO) => Promise<void>;
 }
 
 const BombanaFormDialog = ({
@@ -90,21 +93,32 @@ const BombanaFormDialog = ({
     },
   });
 
-  const onSubmit = (data: BombanaFormValues) => {
-    if (isEditMode) {
-      // aqui você consegue mandar também data.descricao para salvar histórico
-      toast.success("Bombona atualizada com sucesso!", {
-        description: `QR Code: ${data.qrCode}`,
-      });
-    } else {
-      toast.success("Bombana cadastrada com sucesso!", {
-        description: `QR Code: ${data.qrCode}`,
-      });
-    }
+  const onSubmit = async (data: BombanaFormValues) => {
+    try {
+      if (isEditMode && editData) {
+        const updateData: UpdateBombanaDTO = {
+          capacidade: data.capacidade,
+          localizacao: data.localizacao,
+          status: data.status,
+          descricao: data.descricao,
+        };
+        await onSuccess?.(updateData);
+      } else {
+        const createData: CreateBombanaDTO = {
+          qrCode: data.qrCode,
+          capacidade: data.capacidade,
+          localizacao: data.localizacao,
+          status: data.status,
+        };
+        await onSuccess?.(createData);
+      }
 
-    form.reset();
-    setOpen(false);
-    onSuccess?.();
+      form.reset();
+      setOpen(false);
+    } catch (error) {
+      // Erro já tratado nos hooks
+      console.error("Erro ao salvar bombana:", error);
+    }
   };
 
   return (

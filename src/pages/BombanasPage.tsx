@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Download, SlidersHorizontal, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import BombanaCard, { Bombana } from "@/components/BombanaCard";
 import BombanaFormDialog from "@/components/BombanaFormDialog";
 import BombanaMap from "@/components/BombanaMap";
+import { useBombanas } from "@/hooks/useBombanas";
+import { CreateBombanaDTO } from "@/services/bombanaService";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -82,19 +84,119 @@ const BombanasPage = () => {
   const [sortBy, setSortBy] = useState("recente");
   const [selectedBombanas, setSelectedBombanas] = useState<string[]>([]);
   const [showMapView, setShowMapView] = useState(false);
+  const [useMockData] = useState(true); // Altere para false quando conectar a API
+
+  const {
+    bombanas: apiBombanas,
+    loading,
+    fetchBombanas,
+    createBombana,
+    updateBombana,
+    bulkUpdateBombanas,
+  } = useBombanas();
+
+  // Dados mock para desenvolvimento
+  const mockBombanas: Bombana[] = [
+    {
+      id: "1",
+      qrCode: "BOM001",
+      status: "disponivel",
+      localizacao: "Depósito A - Setor 1",
+      ultimaAtualizacao: "Hoje às 14:30",
+      capacidade: "13kg",
+      lat: -23.653139,
+      lng: -52.613303,
+      dataAtualizacao: new Date("2025-11-23T14:30:00"),
+    },
+    {
+      id: "2",
+      qrCode: "BOM002",
+      status: "em-uso",
+      localizacao: "Cliente - Rua das Flores, 123",
+      ultimaAtualizacao: "Ontem às 09:15",
+      capacidade: "13kg",
+      lat: -23.656789,
+      lng: -52.610456,
+      dataAtualizacao: new Date("2025-11-22T09:15:00"),
+    },
+    {
+      id: "3",
+      qrCode: "BOM003",
+      status: "manutencao",
+      localizacao: "Oficina - Setor Manutenção",
+      ultimaAtualizacao: "Há 2 dias",
+      capacidade: "13kg",
+      lat: -23.649876,
+      lng: -52.618901,
+      dataAtualizacao: new Date("2025-11-21T10:00:00"),
+    },
+    {
+      id: "4",
+      qrCode: "BOM004",
+      status: "disponivel",
+      localizacao: "Depósito B - Setor 2",
+      ultimaAtualizacao: "Hoje às 10:00",
+      capacidade: "20kg",
+      lat: -23.651234,
+      lng: -52.615678,
+      dataAtualizacao: new Date("2025-11-23T10:00:00"),
+    },
+    {
+      id: "5",
+      qrCode: "BOM005",
+      status: "em-uso",
+      localizacao: "Cliente - Av. Principal, 456",
+      ultimaAtualizacao: "Hoje às 08:45",
+      capacidade: "13kg",
+      lat: -23.658901,
+      lng: -52.608234,
+      dataAtualizacao: new Date("2025-11-23T08:45:00"),
+    },
+  ];
+
+  const bombanas = useMockData ? mockBombanas : apiBombanas;
+
+  useEffect(() => {
+    if (!useMockData) {
+      fetchBombanas();
+    }
+  }, [useMockData]);
 
   const handleExportData = () => {
     toast.success("Lista exportada com sucesso!");
   };
 
-  const handleBulkAction = (action: string) => {
+  const handleCreateBombana = async (data: CreateBombanaDTO) => {
+    if (useMockData) {
+      toast.success("Bombana cadastrada com sucesso (modo mock)!");
+      return;
+    }
+    await createBombana(data);
+  };
+
+  const handleUpdateBombana = async (id: string, data: any) => {
+    if (useMockData) {
+      toast.success("Bombana atualizada com sucesso (modo mock)!");
+      return;
+    }
+    await updateBombana(id, data);
+  };
+
+  const handleBulkAction = async (status: "disponivel" | "em-uso" | "manutencao") => {
     if (selectedBombanas.length === 0) {
       toast.error("Selecione pelo menos uma bombana");
       return;
     }
-    toast.success(
-      `Ação "${action}" aplicada a ${selectedBombanas.length} bombana(s)`
-    );
+
+    if (useMockData) {
+      toast.success(
+        `Status alterado para "${status}" em ${selectedBombanas.length} bombana(s) (modo mock)`
+      );
+      setSelectedBombanas([]);
+      return;
+    }
+
+    await bulkUpdateBombanas(selectedBombanas, { status });
     setSelectedBombanas([]);
   };
 
@@ -104,7 +206,7 @@ const BombanasPage = () => {
     );
   };
 
-  const filteredBombanas = mockBombanas
+  const filteredBombanas = bombanas
     .filter(
       (bombana) =>
         bombana.qrCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -141,7 +243,8 @@ const BombanasPage = () => {
                 Bombonas
               </h1>
               <p className="text-muted-foreground">
-                Total de {mockBombanas.length} bombanas cadastradas
+                Total de {bombanas.length} bombanas cadastradas
+                {loading && " (carregando...)"}
               </p>
             </div>
             {/* <div className="flex gap-2">
@@ -150,7 +253,11 @@ const BombanasPage = () => {
                 Exportar
               </Button>
               </div> */}
-            <BombanaFormDialog />
+            <BombanaFormDialog
+              onSuccess={async (data) => {
+                await handleCreateBombana(data as CreateBombanaDTO);
+              }}
+            />
           </div>
 
           {/* Barra de filtros e ações */}
@@ -201,6 +308,7 @@ const BombanasPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleBulkAction("manutencao")}
+                      disabled={loading}
                     >
                       Manutenção
                     </Button>
@@ -208,6 +316,7 @@ const BombanasPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleBulkAction("disponivel")}
+                      disabled={loading}
                     >
                       Marcar Disponível
                     </Button>
@@ -262,7 +371,10 @@ const BombanasPage = () => {
                       checked={selectedBombanas.includes(bombana.id)}
                       onCheckedChange={() => toggleBombanaSelection(bombana.id)}
                     />
-                    <BombanaCard bombana={bombana} />
+                    <BombanaCard 
+                      bombana={bombana} 
+                      onUpdate={handleUpdateBombana}
+                    />
                   </div>
                 ))}
               </div>
@@ -277,7 +389,10 @@ const BombanasPage = () => {
                       checked={selectedBombanas.includes(bombana.id)}
                       onCheckedChange={() => toggleBombanaSelection(bombana.id)}
                     />
-                    <BombanaCard bombana={bombana} />
+                    <BombanaCard 
+                      bombana={bombana} 
+                      onUpdate={handleUpdateBombana}
+                    />
                   </div>
                 ))}
               </div>
@@ -292,7 +407,10 @@ const BombanasPage = () => {
                       checked={selectedBombanas.includes(bombana.id)}
                       onCheckedChange={() => toggleBombanaSelection(bombana.id)}
                     />
-                    <BombanaCard bombana={bombana} />
+                    <BombanaCard 
+                      bombana={bombana} 
+                      onUpdate={handleUpdateBombana}
+                    />
                   </div>
                 ))}
               </div>
@@ -307,7 +425,10 @@ const BombanasPage = () => {
                       checked={selectedBombanas.includes(bombana.id)}
                       onCheckedChange={() => toggleBombanaSelection(bombana.id)}
                     />
-                    <BombanaCard bombana={bombana} />
+                    <BombanaCard 
+                      bombana={bombana} 
+                      onUpdate={handleUpdateBombana}
+                    />
                   </div>
                 ))}
               </div>

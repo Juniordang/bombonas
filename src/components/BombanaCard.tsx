@@ -19,6 +19,7 @@ export interface Bombana {
 
 interface BombanaCardProps {
   bombana: Bombana;
+  onUpdate?: (id: string, data: any) => Promise<void>;
 }
 
 const statusConfig = {
@@ -39,7 +40,7 @@ const statusConfig = {
   },
 };
 
-const BombanaCard = ({ bombana }: BombanaCardProps) => {
+const BombanaCard = ({ bombana, onUpdate }: BombanaCardProps) => {
   const status = statusConfig[bombana.status];
 
   return (
@@ -81,6 +82,11 @@ const BombanaCard = ({ bombana }: BombanaCardProps) => {
               capacidade: bombana.capacidade,
               localizacao: bombana.localizacao,
               status: bombana.status,
+            }}
+            onSuccess={async (data) => {
+              if (onUpdate) {
+                await onUpdate(bombana.id, data);
+              }
             }}
           />
           <Button variant="outline" className="flex-1" asChild>
