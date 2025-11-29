@@ -92,14 +92,14 @@ const BombanasPage = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container py-8">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between">
+      <main className="container py-4 sm:py-6 lg:py-8 px-4">
+        <div className="flex flex-col gap-4 sm:gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight mb-2">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
                 Bombonas
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Total de {bombanas.length} bombanas cadastradas
                 {loading && " (carregando...)"}
               </p>
@@ -119,8 +119,8 @@ const BombanasPage = () => {
 
           {/* Barra de filtros e ações */}
           <Card>
-            <CardContent className="p-4">
-              <div className="flex flex-col md:flex-row gap-4">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -132,7 +132,7 @@ const BombanasPage = () => {
                 </div>
 
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SlidersHorizontal className="h-4 w-4 mr-2" />
                     <SelectValue placeholder="Ordenar por" />
                   </SelectTrigger>
@@ -148,6 +148,7 @@ const BombanasPage = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowMapView(!showMapView)}
+                  className="w-full sm:w-auto"
                 >
                   <MapPin className="h-4 w-4 mr-2" />
                   {showMapView ? "Ver Lista" : "Ver no Mapa"}
@@ -156,11 +157,11 @@ const BombanasPage = () => {
 
               {/* Ações em massa */}
               {selectedBombanas.length > 0 && (
-                <div className="mt-4 flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
+                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-primary/10 rounded-lg">
                   <span className="text-sm font-medium">
                     {selectedBombanas.length} selecionada(s)
                   </span>
-                  <div className="flex gap-2 ml-auto">
+                  <div className="flex flex-wrap gap-2 sm:ml-auto">
                     <Button
                       variant="outline"
                       size="sm"
@@ -204,23 +205,23 @@ const BombanasPage = () => {
             </div>
           ) : (
             <Tabs defaultValue="todas" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="todas">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+                <TabsTrigger value="todas" className="text-xs sm:text-sm">
                   Todas ({filteredBombanas.length})
                 </TabsTrigger>
-                <TabsTrigger value="disponivel">
+                <TabsTrigger value="disponivel" className="text-xs sm:text-sm">
                   Disponíveis ({filterByStatus("disponivel").length})
                 </TabsTrigger>
-                <TabsTrigger value="em-uso">
+                <TabsTrigger value="em-uso" className="text-xs sm:text-sm">
                   Em Uso ({filterByStatus("em-uso").length})
                 </TabsTrigger>
-                <TabsTrigger value="manutencao">
+                <TabsTrigger value="manutencao" className="text-xs sm:text-sm">
                   Manutenção ({filterByStatus("manutencao").length})
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="todas" className="mt-6">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <TabsContent value="todas" className="mt-4 sm:mt-6">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filteredBombanas.map((bombana) => (
                   <div key={bombana.id} className="relative">
                     <Checkbox
@@ -237,8 +238,8 @@ const BombanasPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="disponivel" className="mt-6">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <TabsContent value="disponivel" className="mt-4 sm:mt-6">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filterByStatus("disponivel").map((bombana) => (
                   <div key={bombana.id} className="relative">
                     <Checkbox
@@ -255,8 +256,8 @@ const BombanasPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="em-uso" className="mt-6">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <TabsContent value="em-uso" className="mt-4 sm:mt-6">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filterByStatus("em-uso").map((bombana) => (
                   <div key={bombana.id} className="relative">
                     <Checkbox
@@ -273,8 +274,8 @@ const BombanasPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="manutencao" className="mt-6">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <TabsContent value="manutencao" className="mt-4 sm:mt-6">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filterByStatus("manutencao").map((bombana) => (
                   <div key={bombana.id} className="relative">
                     <Checkbox
