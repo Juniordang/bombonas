@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import {
   Package,
   MapPin,
@@ -19,21 +20,13 @@ import BombanaMap from "@/components/BombanaMap";
 import ActivityTimeline from "@/components/ActivityTimeline";
 import BombanaFormDialog from "@/components/BombanaFormDialog";
 import { toast } from "sonner";
+import { useBombana } from "@/hooks/useBombanas";
+import { bombanaService } from "@/services/bombanaService";
 
 const BombanaDetails = () => {
   const { id } = useParams();
-
-  // Dados mockados - em produção isso viria de uma API ou banco
-  const bombana = {
-    id: id || "1",
-    qrCode: "BOM001",
-    status: "disponivel" as const,
-    localizacao: "Unipar cianorte",
-    ultimaAtualizacao: "Hoje às 14:30",
-    capacidade: "13kg",
-    lat: -23.653139,
-    lng: -52.613303,
-  };
+  const navigate = useNavigate();
+  const { bombana, loading, error, refetch } = useBombana(id || "");
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
@@ -56,9 +49,41 @@ const BombanaDetails = () => {
     return variants[status] || "default";
   };
 
-  const handleDisable = () => {
-    toast.error("Tem certeza que deseja excluir esta bombana?");
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    try {
+      await bombanaService.delete(id);
+      toast.success("Bombana removida com sucesso!");
+      navigate("/bombanas");
+    } catch (err) {
+      toast.error("Erro ao remover bombana");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container py-8">
+          <div className="text-center">Carregando...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !bombana) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container py-8">
+          <div className="text-center text-destructive">
+            Bombana não encontrada
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,7 +98,19 @@ const BombanaDetails = () => {
             </Button>
           </Link>
           <div className="flex gap-2">
-            <Button variant="destructive" size="sm" onClick={handleDisable}>
+            <BombanaFormDialog
+              editData={{
+                id: bombana.id,
+                qrCode: bombana.qrCode,
+                capacidade: bombana.capacidade,
+                localizacao: bombana.localizacao,
+                status: bombana.status,
+                lat: bombana.lat,
+                lng: bombana.lng,
+              }}
+              onSuccess={refetch}
+            />
+            <Button variant="destructive" size="sm" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
               Desativar
             </Button>
