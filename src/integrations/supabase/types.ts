@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bombanas: {
+        Row: {
+          capacidade: string
+          created_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          localizacao: string
+          qr_code: string
+          status: Database["public"]["Enums"]["status_bombana"]
+          updated_at: string
+        }
+        Insert: {
+          capacidade: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          localizacao: string
+          qr_code: string
+          status?: Database["public"]["Enums"]["status_bombana"]
+          updated_at?: string
+        }
+        Update: {
+          capacidade?: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          localizacao?: string
+          qr_code?: string
+          status?: Database["public"]["Enums"]["status_bombana"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      historico_bombanas: {
+        Row: {
+          acao: string
+          bombana_id: string
+          created_at: string
+          descricao: string | null
+          id: string
+          localizacao_anterior: string | null
+          localizacao_nova: string | null
+          status_anterior: Database["public"]["Enums"]["status_bombana"] | null
+          status_novo: Database["public"]["Enums"]["status_bombana"] | null
+        }
+        Insert: {
+          acao: string
+          bombana_id: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          localizacao_anterior?: string | null
+          localizacao_nova?: string | null
+          status_anterior?: Database["public"]["Enums"]["status_bombana"] | null
+          status_novo?: Database["public"]["Enums"]["status_bombana"] | null
+        }
+        Update: {
+          acao?: string
+          bombana_id?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          localizacao_anterior?: string | null
+          localizacao_nova?: string | null
+          status_anterior?: Database["public"]["Enums"]["status_bombana"] | null
+          status_novo?: Database["public"]["Enums"]["status_bombana"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_bombanas_bombana_id_fkey"
+            columns: ["bombana_id"]
+            isOneToOne: false
+            referencedRelation: "bombanas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +102,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      status_bombana: "disponivel" | "em-uso" | "manutencao"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +229,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      status_bombana: ["disponivel", "em-uso", "manutencao"],
+    },
   },
 } as const
