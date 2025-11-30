@@ -1,87 +1,88 @@
+import { useEffect } from "react";
 import { Package, Activity, AlertTriangle, TrendingUp } from "lucide-react";
 import Header from "@/components/Header";
 import StatsCard from "@/components/StatsCard";
 import BombanaCard, { Bombana } from "@/components/BombanaCard";
-
-// Dados de exemplo
-const mockBombanas: Bombana[] = [
-  {
-    id: "1",
-    qrCode: "BOM001",
-    status: "disponivel",
-    localizacao: "Depósito A - Setor 1",
-    ultimaAtualizacao: "Hoje às 14:30",
-    capacidade: "13kg",
-  },
-  {
-    id: "2",
-    qrCode: "BOM002",
-    status: "em-uso",
-    localizacao: "Cliente - Rua das Flores, 123",
-    ultimaAtualizacao: "Ontem às 09:15",
-    capacidade: "13kg",
-  },
-  {
-    id: "3",
-    qrCode: "BOM003",
-    status: "manutencao",
-    localizacao: "Oficina - Setor Manutenção",
-    ultimaAtualizacao: "Há 2 dias",
-    capacidade: "13kg",
-  },
-];
+import { useBombanas } from "@/hooks/useBombanas";
 
 const Dashboard = () => {
+  const { bombanas, loading, fetchBombanas } = useBombanas();
+
+  useEffect(() => {
+    fetchBombanas();
+  }, []);
+
+  const disponiveisCount = bombanas.filter(b => b.status === "disponivel").length;
+  const emUsoCount = bombanas.filter(b => b.status === "em-uso").length;
+  const manutencaoCount = bombanas.filter(b => b.status === "manutencao").length;
+
+  // Bombanas mais recentes (últimas 6)
+  const recentBombanas = [...bombanas]
+    .sort((a, b) => (b.dataAtualizacao?.getTime() || 0) - (a.dataAtualizacao?.getTime() || 0))
+    .slice(0, 6);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">
+      <main className="container py-4 sm:py-6 lg:py-8 px-4">
+        <div className="mb-6 lg:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Visão geral do sistema de gerenciamento de bombanas
+            {loading && " (carregando...)"}
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4 mb-6 lg:mb-8">
           <StatsCard
             title="Total de Bombanas"
-            value="5"
+            value={bombanas.length.toString()}
             icon={Package}
-            trend={{ value: "12% vs. mês anterior", positive: true }}
           />
           <StatsCard
             title="Disponíveis"
-            value="2"
+            value={disponiveisCount.toString()}
             icon={Activity}
             variant="success"
           />
           <StatsCard
             title="Em Uso"
-            value="2"
+            value={emUsoCount.toString()}
             icon={TrendingUp}
             variant="info"
           />
           <StatsCard
             title="Manutenção"
-            value="1"
+            value={manutencaoCount.toString()}
             icon={AlertTriangle}
             variant="warning"
           />
         </div>
 
         {/* Recent Activity */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold">Atividades Recentes</h2>
+        <div className="mb-6 lg:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-2">
+            <h2 className="text-xl sm:text-2xl font-semibold">Atividades Recentes</h2>
+            {recentBombanas.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Mostrando as {recentBombanas.length} bombanas mais recentes
+              </p>
+            )}
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {mockBombanas.map((bombana) => (
-              <BombanaCard key={bombana.id} bombana={bombana} />
-            ))}
-          </div>
+          {recentBombanas.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Nenhuma bombana cadastrada ainda</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {recentBombanas.map((bombana) => (
+                <BombanaCard key={bombana.id} bombana={bombana} />
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

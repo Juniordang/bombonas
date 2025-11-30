@@ -49,6 +49,18 @@ const BombanaDetails = () => {
     return variants[status] || "default";
   };
 
+  const handleUpdate = async (updateData: any) => {
+    if (!id) return;
+    
+    try {
+      await bombanaService.update(id, updateData);
+      toast.success("Bombana atualizada com sucesso!");
+      await refetch();
+    } catch (err) {
+      toast.error("Erro ao atualizar bombana");
+    }
+  };
+
   const handleDelete = async () => {
     if (!id) return;
     
@@ -89,15 +101,15 @@ const BombanaDetails = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container py-8">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="container py-4 sm:py-6 lg:py-8 px-4">
+        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <Link to="/bombanas">
             <Button variant="ghost" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Button>
           </Link>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <BombanaFormDialog
               editData={{
                 id: bombana.id,
@@ -108,7 +120,7 @@ const BombanaDetails = () => {
                 lat: bombana.lat,
                 lng: bombana.lng,
               }}
-              onSuccess={refetch}
+              onSuccess={handleUpdate}
             />
             <Button variant="destructive" size="sm" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
@@ -117,12 +129,12 @@ const BombanaDetails = () => {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle>Informações Gerais</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Informações Gerais</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">QR Code</span>
                 <span className="font-semibold">{bombana.qrCode}</span>
@@ -164,7 +176,7 @@ const BombanaDetails = () => {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           <ActivityTimeline />
         </div>
       </main>

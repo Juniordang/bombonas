@@ -138,18 +138,18 @@ const BombanaFormDialog = ({
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
             {isEditMode ? "Editar Bombona" : "Cadastrar Nova Bombona"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Preencha os dados da bombona. Todos os campos são obrigatórios.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
             {/* QR CODE */}
             <FormField
               name="qrCode"
@@ -240,8 +240,10 @@ const BombanaFormDialog = ({
                       type="button"
                       variant="outline"
                       onClick={() => setLocationDialogOpen(true)}
+                      className="shrink-0"
                     >
-                      Escolher no mapa
+                      <span className="hidden sm:inline">Escolher no mapa</span>
+                      <span className="sm:hidden">Mapa</span>
                     </Button>
                   </div>
 
