@@ -49,6 +49,18 @@ const BombanaDetails = () => {
     return variants[status] || "default";
   };
 
+  const handleUpdate = async (updateData: any) => {
+    if (!id) return;
+    
+    try {
+      await bombanaService.update(id, updateData);
+      toast.success("Bombana atualizada com sucesso!");
+      await refetch();
+    } catch (err) {
+      toast.error("Erro ao atualizar bombana");
+    }
+  };
+
   const handleDelete = async () => {
     if (!id) return;
     
@@ -108,7 +120,7 @@ const BombanaDetails = () => {
                 lat: bombana.lat,
                 lng: bombana.lng,
               }}
-              onSuccess={refetch}
+              onSuccess={handleUpdate}
             />
             <Button variant="destructive" size="sm" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
